@@ -33,6 +33,17 @@ class MenuDataProvider {
     });
   }
 
+  static getValidDateForApi(year, month, day) {
+    const SEPARATOR = '-';
+    const fullMonth = this.getTwoDigitValue(month + 1);
+    const fullDay = this.getTwoDigitValue(day);
+    return year + SEPARATOR + fullMonth + SEPARATOR + fullDay;
+  }
+
+  static getTwoDigitValue(value) {
+    return value > 9 ? value : '0' + value;
+  }
+
 };
 
 module.exports = MenuDataProvider;

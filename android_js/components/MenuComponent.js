@@ -8,12 +8,15 @@ import React, {
   ToolbarAndroid,
   ListView,
   ViewPagerAndroid,
-  TouchableNativeFeedback
+  TouchableNativeFeedback,
+  DatePickerAndroid
 } from 'react-native';
 
 let MenuDataProvider = require('../.././infra/MenuDataProvider');
 let Dimension = require('../.././infra/Dimension');
 let Tabs = require('../.././infra/components/TabsComponent');
+let CafeMap = require('../.././infra/CafeMap');
+let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
 
 class MenuComponent extends Component {
   constructor(props) {
@@ -25,7 +28,9 @@ class MenuComponent extends Component {
       }),
       tabs: [],
       currentTab: null,
-      menuData: null
+      menuData: null,
+      cafe: this.props.initCafe,
+      date: this.props.initDate
     };
   }
 
@@ -34,8 +39,10 @@ class MenuComponent extends Component {
       <View style={styles.container}>
         <ToolbarAndroid
           style={styles.toolbar}
-          title="InCafe"
-          titleColor='#FFFFFF'/>
+          title={this.state.cafe + ' ' + this.state.date}
+          titleColor='#FFFFFF'
+          actions={[{title: 'Change', icon: editDateImg, show: 'always'}]}
+          onActionSelected={this.onToolbarActionSelected.bind(this)} />
         <Tabs
           dataSource={this.state.tabs}
           currentTab={this.state.currentTab}
@@ -75,13 +82,14 @@ class MenuComponent extends Component {
   }
 
   componentDidMount() {
-    this.getData(this.state.currentTab).done();
+    this.getData(this.state.cafe, this.state.date).done();
   }
 
   onChangeMenuForDay(nextTab) {
     if (this.state.menuData) {
       const nextTabIndex = this.state.tabs.indexOf(nextTab);
-      const stations = this.getStationsFromData(this.state.menuData, nextTabIndex);
+      const cafeId = CafeMap[this.state.cafe];
+      const stations = this.getStationsFromData(this.state.menuData, cafeId, nextTabIndex);
       const itemsMap = this.state.menuData.items;
       const mealDataSource = MenuDataProvider.parseMeal(stations, itemsMap);
       this.setState({
@@ -91,32 +99,51 @@ class MenuComponent extends Component {
     }
   }
 
-  async getData(tab) {
-    const menuApi = MenuDataProvider.getMenuApi(this.props.cafeId, this.props.date);
+  onToolbarActionSelected(position) {
+    this.openDatePicker();
+  }
+
+  async openDatePicker() {
+    try {
+      const {action, year, month, day} = await DatePickerAndroid.open({
+        date: new Date()
+      });
+      if (action !== DatePickerAndroid.dismissedAction) {
+        this.getData(this.state.cafe, MenuDataProvider.getValidDateForApi(year, month, day));
+      }
+    } catch ({code, message}) {
+      console.warn('Cannot open date picker', message);
+    }
+  }
+
+  async getData(cafe, date) {
+    const cafeId = CafeMap[cafe];
+    const menuApi = MenuDataProvider.getMenuApi(cafeId, date);
 
     try {
       let response = await fetch(menuApi);
       let data = await response.json();
-      const tabs = MenuDataProvider.getMealTabs(data.days[0].cafes[this.props.cafeId].dayparts[0]);
+      const tabs = MenuDataProvider.getMealTabs(data.days[0].cafes[cafeId].dayparts[0]);
       // display menu for first meal (Breakfast) first
       const tabIndex = 0;
       const currentTab = tabs[tabIndex];
-      const stations = this.getStationsFromData(data, tabIndex);
+      const stations = this.getStationsFromData(data, cafeId, tabIndex);
       const itemsMap = data.items;
       const mealDataSource = MenuDataProvider.parseMeal(stations, itemsMap);
       this.setState({
         mealDataSource: this.state.mealDataSource.cloneWithRowsAndSections(mealDataSource),
         menuData: data,
         tabs: tabs,
-        currentTab: currentTab
+        currentTab: currentTab,
+        date: date
       });
     } catch (error) {
       console.warn(error);
     }
   }
 
-  getStationsFromData(data, tabIndex) {
-    return data.days[0].cafes[this.props.cafeId].dayparts[0][tabIndex].stations;
+  getStationsFromData(data, cafeId, tabIndex) {
+    return data.days[0].cafes[cafeId].dayparts[0][tabIndex].stations;
   }
 
 }

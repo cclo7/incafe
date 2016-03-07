@@ -25,8 +25,8 @@ class incafe extends Component {
       case 'Menu':
         return (
           <MenuComponent
-            cafeId="633"
-            date="2016-03-03"/>
+            initCafe="inCafe"
+            initDate="2016-03-03"/>
         );
     }
   }
