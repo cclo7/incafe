@@ -19,24 +19,17 @@ class MenuComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      tabs: ['Breakfast', 'Lunch'],
-      meal: new ListView.DataSource({
+      mealDataSource: new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 != row2,
         sectionHeaderHasChanged: (header1, header2) => header1 != header2
       }),
+      tabs: [],
+      currentTab: null,
+      menuData: null
     };
   }
 
   render() {
-
-    let listView;
-    if (this.state.meal != null) {
-      listView = <ListView
-        dataSource={this.state.meal}
-        renderSectionHeader={this.renderStationHeader}
-        renderRow={this.renderRow} />
-    }
-
     return (
       <View style={styles.container}>
         <ToolbarAndroid
@@ -45,9 +38,14 @@ class MenuComponent extends Component {
           titleColor='#FFFFFF'/>
         <Tabs
           dataSource={this.state.tabs}
-          onPress={this.onChangeMenuForDay} />
-        {listView}
-      </View>
+          currentTab={this.state.currentTab}
+          onPress={this.onChangeMenuForDay.bind(this)} />
+        <ListView
+          dataSource={this.state.mealDataSource}
+          renderSectionHeader={this.renderStationHeader}
+          renderRow={this.renderRow}
+          renderSeparator={this.renderSeparator} />
+        </View>
     );
   }
 
@@ -55,7 +53,8 @@ class MenuComponent extends Component {
     return (
       <TouchableNativeFeedback>
         <View style={styles.dishRow}>
-          <Text style={styles.dishText}>{rowData.label}</Text>
+          <Text style={styles.dishLabel}>{rowData.label}</Text>
+          <Text style={styles.dishDescription}>{rowData.description}</Text>
         </View>
       </TouchableNativeFeedback>
     );
@@ -64,33 +63,62 @@ class MenuComponent extends Component {
   renderStationHeader(sectionData, sectionID) {
     return (
       <View style={styles.stationRow}>
-        <Text style={styles.stationText}>Section: {sectionID}</Text>
+        <Text style={styles.stationText}>{sectionID}</Text>
       </View>
     );
   }
 
+  renderSeparator(sectionID, rowID, adjacentRowHighlighted) {
+    return (
+      <View style={styles.dishRowSeparator} key={sectionID + '-' + rowID}></View>
+    );
+  }
+
   componentDidMount() {
-    this.getData().done();
+    this.getData(this.state.currentTab).done();
   }
 
-  onChangeMenuForDay() {
-
+  onChangeMenuForDay(nextTab) {
+    if (this.state.menuData) {
+      const nextTabIndex = this.state.tabs.indexOf(nextTab);
+      const stations = this.getStationsFromData(this.state.menuData, nextTabIndex);
+      const itemsMap = this.state.menuData.items;
+      const mealDataSource = MenuDataProvider.parseMeal(stations, itemsMap);
+      this.setState({
+        mealDataSource: this.state.mealDataSource.cloneWithRowsAndSections(mealDataSource),
+        currentTab: nextTab
+      });
+    }
   }
 
-  async getData() {
+  async getData(tab) {
     const menuApi = MenuDataProvider.getMenuApi(this.props.cafeId, this.props.date);
 
     try {
       let response = await fetch(menuApi);
       let data = await response.json();
-      const meal = MenuDataProvider.parseMeal(data, this.props.cafeId);
+      const tabs = MenuDataProvider.getMealTabs(data.days[0].cafes[this.props.cafeId].dayparts[0]);
+      // display menu for first meal (Breakfast) first
+      const tabIndex = 0;
+      const currentTab = tabs[tabIndex];
+      const stations = this.getStationsFromData(data, tabIndex);
+      const itemsMap = data.items;
+      const mealDataSource = MenuDataProvider.parseMeal(stations, itemsMap);
       this.setState({
-        meal: this.state.meal.cloneWithRowsAndSections(meal)
+        mealDataSource: this.state.mealDataSource.cloneWithRowsAndSections(mealDataSource),
+        menuData: data,
+        tabs: tabs,
+        currentTab: currentTab
       });
     } catch (error) {
       console.warn(error);
     }
   }
+
+  getStationsFromData(data, tabIndex) {
+    return data.days[0].cafes[this.props.cafeId].dayparts[0][tabIndex].stations;
+  }
+
 }
 
 const styles = StyleSheet.create({
@@ -120,17 +148,32 @@ const styles = StyleSheet.create({
   },
   dishRow: {
     paddingVertical: 5,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
+    elevation: 2
   },
-  dishText: {
-    fontSize: 16
+  dishLabel: {
+    fontSize: 16,
+    color: '#000000'
+  },
+  dishDescription: {
+    fontSize: 12,
+    color: '#616161',
+    marginTop: 5,
+    marginLeft: 10
+  },
+  dishRowSeparator: {
+    height: 1,
+    backgroundColor: '#B9F6CA',
+    marginHorizontal: 20
   },
   stationRow: {
     paddingVertical: 10,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
+    backgroundColor: '#EEEEEE',
   },
   stationText: {
-    fontSize: 18
+    fontSize: 16,
+    color: '#616161'
   }
 });
 

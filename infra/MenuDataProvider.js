@@ -14,10 +14,7 @@ class MenuDataProvider {
       + AMPERSAND + URL_PARAM_DATE + '=' + date;
   }
 
-  static parseMeal(data, cafeId) {
-    const stations = data.days[0].cafes[cafeId].dayparts[0][0].stations;
-    const itemsMap = data.items;
-
+  static parseMeal(stations, itemsMap) {
     let result = {}
 
     stations.map(function(station) {
@@ -28,6 +25,12 @@ class MenuDataProvider {
     });
 
     return result;
+  }
+
+  static getMealTabs(daypart) {
+    return daypart.map(function(entry) {
+      return entry.label;
+    });
   }
 
 };
