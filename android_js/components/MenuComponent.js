@@ -143,7 +143,7 @@ class MenuComponent extends Component {
       let data = await response.json();
       const tabs = MenuDataProvider.getMealTabs(data.days[0].cafes[cafeId].dayparts[0]);
       // display menu for first meal (Breakfast) first
-      const tabIndex = 0;
+      const tabIndex = this.state.currentTab ? tabs.indexOf(this.state.currentTab) : 0;
       const currentTab = tabs[tabIndex];
       const stations = this.getStationsFromData(data, cafeId, tabIndex);
       const itemsMap = data.items;
