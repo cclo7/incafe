@@ -44,6 +44,11 @@ class MenuDataProvider {
     return value > 9 ? value : '0' + value;
   }
 
+  static getTodayDate() {
+    const d = new Date();
+    return this.getValidDateForApi(d.getUTCFullYear(), d.getMonth(), d.getDate());
+  }
+
 };
 
 module.exports = MenuDataProvider;

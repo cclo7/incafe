@@ -9,6 +9,7 @@ import React, {
 } from 'react-native';
 
 var MenuComponent = require('./android_js/components/MenuComponent');
+var MenuDataProvider = require('./infra/MenuDataProvider');
 
 class incafe extends Component {
   render() {
@@ -26,7 +27,7 @@ class incafe extends Component {
         return (
           <MenuComponent
             initCafe="inCafe"
-            initDate="2016-03-03"/>
+            initDate={MenuDataProvider.getTodayDate()}/>
         );
     }
   }

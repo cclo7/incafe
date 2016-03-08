@@ -9,7 +9,8 @@ import React, {
   ListView,
   ViewPagerAndroid,
   TouchableNativeFeedback,
-  DatePickerAndroid
+  DatePickerAndroid,
+  PullToRefreshViewAndroid
 } from 'react-native';
 
 let MenuDataProvider = require('../.././infra/MenuDataProvider');
@@ -30,7 +31,8 @@ class MenuComponent extends Component {
       currentTab: null,
       menuData: null,
       cafe: this.props.initCafe,
-      date: this.props.initDate
+      date: this.props.initDate,
+      isRefreshing: false
     };
   }
 
@@ -47,21 +49,32 @@ class MenuComponent extends Component {
           dataSource={this.state.tabs}
           currentTab={this.state.currentTab}
           onPress={this.onChangeMenuForDay.bind(this)} />
-        <ListView
-          dataSource={this.state.mealDataSource}
-          renderSectionHeader={this.renderStationHeader}
-          renderRow={this.renderRow}
-          renderSeparator={this.renderSeparator} />
-        </View>
+        <PullToRefreshViewAndroid
+          style={styles.container}
+          refreshing={this.state.isRefreshing}
+          onRefresh={this.onRefreshData.bind(this)}
+          colors={['#69F0AE', '#00E676', '#00C853']}
+          progressBackgroundColor={'#388E3C'} >
+          <ListView
+            dataSource={this.state.mealDataSource}
+            renderSectionHeader={this.renderStationHeader}
+            renderRow={this.renderRow}
+            renderSeparator={this.renderSeparator} />
+        </PullToRefreshViewAndroid>
+      </View>
     );
   }
 
   renderRow(rowData, sectionID, rowID, highlightRow) {
+    let descriptionText;
+    if (rowData.description.length) {
+      descriptionText = <Text style={styles.dishDescription}>{rowData.description}</Text>;
+    }
     return (
       <TouchableNativeFeedback>
         <View style={styles.dishRow}>
           <Text style={styles.dishLabel}>{rowData.label}</Text>
-          <Text style={styles.dishDescription}>{rowData.description}</Text>
+          {descriptionText}
         </View>
       </TouchableNativeFeedback>
     );
@@ -83,6 +96,10 @@ class MenuComponent extends Component {
 
   componentDidMount() {
     this.getData(this.state.cafe, this.state.date).done();
+  }
+
+  onRefreshData() {
+    this.getData(this.state.cafe, this.state.date);
   }
 
   onChangeMenuForDay(nextTab) {
@@ -117,6 +134,7 @@ class MenuComponent extends Component {
   }
 
   async getData(cafe, date) {
+    this.setState({isRefreshing: true});
     const cafeId = CafeMap[cafe];
     const menuApi = MenuDataProvider.getMenuApi(cafeId, date);
 
@@ -135,7 +153,8 @@ class MenuComponent extends Component {
         menuData: data,
         tabs: tabs,
         currentTab: currentTab,
-        date: date
+        date: date,
+        isRefreshing: false
       });
     } catch (error) {
       console.warn(error);
@@ -174,7 +193,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dishRow: {
-    paddingVertical: 5,
+    paddingVertical: 15,
     paddingHorizontal: 20,
     elevation: 2
   },
@@ -190,7 +209,7 @@ const styles = StyleSheet.create({
   },
   dishRowSeparator: {
     height: 1,
-    backgroundColor: '#B9F6CA',
+    backgroundColor: '#E0E0E0',
     marginHorizontal: 20
   },
   stationRow: {
