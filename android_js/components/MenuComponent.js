@@ -10,7 +10,8 @@ import React, {
   ViewPagerAndroid,
   TouchableNativeFeedback,
   DatePickerAndroid,
-  PullToRefreshViewAndroid
+  PullToRefreshViewAndroid,
+  RecyclerViewBackedScrollView
 } from 'react-native';
 
 let MenuDataProvider = require('../.././infra/MenuDataProvider');
@@ -57,6 +58,7 @@ class MenuComponent extends Component {
           progressBackgroundColor={'#388E3C'} >
           <ListView
             dataSource={this.state.mealDataSource}
+            renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
             renderSectionHeader={this.renderStationHeader}
             renderRow={this.renderRow}
             renderSeparator={this.renderSeparator} />
