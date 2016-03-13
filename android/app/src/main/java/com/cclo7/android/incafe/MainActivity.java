@@ -1,4 +1,4 @@
-package com.incafe;
+package com.cclo7.android.incafe;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactPackage;

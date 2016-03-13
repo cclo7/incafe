@@ -19,6 +19,7 @@ let Dimension = require('../.././infra/Dimension');
 let Tabs = require('../.././infra/components/TabsComponent');
 let CafeMap = require('../.././infra/CafeMap');
 let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
+const AppError = require('../.././infra/Error');
 
 class MenuComponent extends Component {
   constructor(props) {
@@ -33,11 +34,21 @@ class MenuComponent extends Component {
       menuData: null,
       cafe: this.props.initCafe,
       date: this.props.initDate,
-      isRefreshing: false
+      isRefreshing: false,
+      error: null
     };
   }
 
   render() {
+    let bodyView = this.renderBody();
+    let tabs;
+    if (!this.state.error) {
+      tabs = <Tabs
+        dataSource={this.state.tabs}
+        currentTab={this.state.currentTab}
+        onPress={this.onChangeMenuForDay.bind(this)} />;
+    }
+
     return (
       <View style={styles.container}>
         <ToolbarAndroid
@@ -46,23 +57,8 @@ class MenuComponent extends Component {
           titleColor='#FFFFFF'
           actions={[{title: 'Change', icon: editDateImg, show: 'always'}]}
           onActionSelected={this.onToolbarActionSelected.bind(this)} />
-        <Tabs
-          dataSource={this.state.tabs}
-          currentTab={this.state.currentTab}
-          onPress={this.onChangeMenuForDay.bind(this)} />
-        <PullToRefreshViewAndroid
-          style={styles.container}
-          refreshing={this.state.isRefreshing}
-          onRefresh={this.onRefreshData.bind(this)}
-          colors={['#69F0AE', '#00E676', '#00C853']}
-          progressBackgroundColor={'#388E3C'} >
-          <ListView
-            dataSource={this.state.mealDataSource}
-            renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
-            renderSectionHeader={this.renderStationHeader}
-            renderRow={this.renderRow}
-            renderSeparator={this.renderSeparator} />
-        </PullToRefreshViewAndroid>
+        {tabs}
+        {bodyView}
       </View>
     );
   }
@@ -94,6 +90,37 @@ class MenuComponent extends Component {
     return (
       <View style={styles.dishRowSeparator} key={sectionID + '-' + rowID}></View>
     );
+  }
+
+  renderListView() {
+    return (
+      <PullToRefreshViewAndroid
+        style={styles.container}
+        refreshing={this.state.isRefreshing}
+        onRefresh={this.onRefreshData.bind(this)}
+        colors={['#69F0AE', '#00E676', '#00C853']}
+        progressBackgroundColor={'#388E3C'} >
+        <ListView
+          dataSource={this.state.mealDataSource}
+          renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
+          renderSectionHeader={this.renderStationHeader}
+          renderRow={this.renderRow}
+          renderSeparator={this.renderSeparator} />
+      </PullToRefreshViewAndroid>
+    );
+  }
+
+  renderBody() {
+    let errorView;
+    if (this.state.error) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorMessage}>{AppError.getErrorMessage(this.state.error)}</Text>
+        </View>
+      );
+    } else {
+      return this.renderListView();
+    }
   }
 
   componentDidMount() {
@@ -143,6 +170,14 @@ class MenuComponent extends Component {
     try {
       let response = await fetch(menuApi);
       let data = await response.json();
+      const dayData = data.days[0].cafes[cafeId].dayparts[0];
+      if (!dayData.length) {
+        this.setState({
+          error: 'NoMenuData'
+        });
+        return;
+      }
+
       const tabs = MenuDataProvider.getMealTabs(data.days[0].cafes[cafeId].dayparts[0]);
       // display menu for first meal (Breakfast) first
       const tabIndex = this.state.currentTab ? tabs.indexOf(this.state.currentTab) : 0;
@@ -156,10 +191,14 @@ class MenuComponent extends Component {
         tabs: tabs,
         currentTab: currentTab,
         date: date,
-        isRefreshing: false
+        isRefreshing: false,
+        error: null
       });
+
     } catch (error) {
-      console.warn(error);
+      this.setState({
+        error: error
+      });
     }
   }
 
@@ -222,6 +261,13 @@ const styles = StyleSheet.create({
   stationText: {
     fontSize: 16,
     color: '#616161'
+  },
+  errorContainer: {
+    alignItems: 'center',
+  },
+  errorMessage: {
+    fontSize: 16,
+    marginTop: 30
   }
 });
 
