@@ -1,32 +1,35 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- */
 'use strict';
 import React, {
   AppRegistry,
   Component,
   StyleSheet,
   Text,
-  View
+  View,
+  Navigator,
 } from 'react-native';
+
+var MenuComponent = require('./ios_js/components/MenuComponent');
+var MenuDataProvider = require('./infra/MenuDataProvider');
 
 class incafe extends Component {
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
-      </View>
+      <Navigator
+        ref='navigator'
+        initialRoute={{name: 'Menu', index: 0}}
+        renderScene={this.renderScene}/>
     );
+  }
+
+  renderScene(route, navigator) {
+    switch (route.name) {
+      case 'Menu':
+        return (
+          <MenuComponent
+            initCafe="inCafe"
+            initDate={MenuDataProvider.getTodayDate()}/>
+        );
+    }
   }
 }
 
