@@ -56,6 +56,9 @@ class incafe2 extends Component {
                 index: route.index + 1
               });
             }}
+            onCancel={() => {
+              navigator.pop();
+            }}
             initDate={this.state.date}/>
         );
     }

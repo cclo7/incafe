@@ -5,11 +5,12 @@ import React, {
   Text,
   View,
   StatusBar,
-  TouchableOpacity,
+  TouchableHighlight,
   DatePickerIOS
 } from 'react-native';
 
 let Dimension = require('../.././infra/Dimension');
+let ModalToolbarComponent = require('../.././infra/components/ModalToolbarComponent');
 
 class DatePickerComponent extends Component {
   constructor(props) {
@@ -24,15 +25,20 @@ class DatePickerComponent extends Component {
       <View style={styles.container}>
         <StatusBar
           barStyle="default"/>
-        <DatePickerIOS
-          mode='date'
-          date={this.state.date}
-          onDateChange={this.onDateChange.bind(this)}/>
-        <TouchableOpacity
+        <ModalToolbarComponent
+          title='Pick another date'
+          onPressExit={this.props.onCancel} />
+        <View style={styles.datePickerContainer}>
+          <DatePickerIOS
+            mode='date'
+            date={this.state.date}
+            onDateChange={this.onDateChange.bind(this)}/>
+        </View>
+        <TouchableHighlight
           style={styles.submitButton}
           onPress={this.onSubmit.bind(this)}>
           <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
+        </TouchableHighlight>
       </View>
     );
   }
@@ -51,19 +57,21 @@ class DatePickerComponent extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#FFFFFF',
     paddingTop: Dimension.STATUS_BAR_HEIGHT_IOS,
+  },
+  datePickerContainer: {
+    flex: 1,
     alignItems: 'center'
   },
   submitButton: {
     marginTop: 10,
-    paddingHorizontal: 20,
     paddingVertical: 10,
     backgroundColor: '#FF9800'
   },
   submitButtonText: {
-    color: '#FFFFFF'
+    color: '#FFFFFF',
+    textAlign: 'center'
   }
 });
 

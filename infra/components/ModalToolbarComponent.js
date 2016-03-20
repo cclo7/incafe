@@ -9,26 +9,25 @@ import React, {
 } from 'react-native';
 
 let Dimension = require('.././Dimension');
-let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
+let clearIcon = require('../.././infra/img/ic_clear_white_24dp.png');
 
-class ToolbarComponent extends Component {
+class ModalToolbarComponent extends Component {
 
   constructor(props) {
     super(props);
   }
 
-
   render() {
 
     return (
       <View style={styles.container}>
-        <Text style={styles.titleText}>{this.props.title}</Text>
         <TouchableOpacity
-          style={styles.editDateButton}
-          onPress={this.props.onPressEditDate}>
+          style={styles.exitButton}
+          onPress={this.props.onPressExit}>
           <Image
-            source={editDateImg} />
+            source={clearIcon} />
         </TouchableOpacity>
+        <Text style={styles.titleText}>{this.props.title}</Text>
       </View>
     );
   }
@@ -36,23 +35,20 @@ class ToolbarComponent extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FF9800',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#FF9800',
     height: Dimension.TOOLBAR_HEIGHT_IOS,
-    position: 'relative'
   },
   titleText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
+    flex: 1
   },
-  editDateButton: {
-    position: 'absolute',
-    right: 20,
-    top: 9,
-    height: Dimension.TOOLBAR_HEIGHT_IOS,
-    paddingHorizontal: 5,
+  exitButton: {
+    padding: 5,
+    marginHorizontal: 10
   }
 });
 
-module.exports = ToolbarComponent;
+module.exports = ModalToolbarComponent;
