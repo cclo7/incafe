@@ -1,23 +1,22 @@
 'use strict';
 import React, {
-  AppRegistry,
   Component,
   StyleSheet,
   Text,
   View,
   ListView,
-  DatePickerAndroid,
-  PullToRefreshViewAndroid,
-  RecyclerViewBackedScrollView,
   StatusBar,
   SegmentedControlIOS,
   TouchableOpacity,
-  Navigator
+  TouchableHighlight,
+  Navigator,
+  TabBarIOS,
+  DatePickerIOS
 } from 'react-native';
 
 let MenuDataProvider = require('../.././infra/MenuDataProvider');
 let Dimension = require('../.././infra/Dimension');
-let Tabs = require('../.././infra/components/TabsComponent');
+let ToolbarComponent = require('../.././infra/components/ToolbarComponent');
 let CafeMap = require('../.././infra/CafeMap');
 let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
 const AppError = require('../.././infra/Error');
@@ -45,7 +44,7 @@ class MenuComponent extends Component {
     let tabs;
     if (this.state.currentTab) {
       tabs = <SegmentedControlIOS
-              style={styles.tabs}
+              style={styles.segmentedControl}
               tintColor="#FF9800"
               selectedIndex={0}
               onValueChange={this.onChangeMenuForDay.bind(this)}
@@ -57,6 +56,9 @@ class MenuComponent extends Component {
         <StatusBar
           barStyle="default"
           networkActivityIndicatorVisible={this.state.isRefreshing} />
+        <ToolbarComponent
+          title='Menu'
+          onPressEditDate={this.props.onPressEditDate}/>
         {tabs}
         {bodyView}
       </View>
@@ -97,7 +99,6 @@ class MenuComponent extends Component {
     return (
       <ListView
         dataSource={this.state.mealDataSource}
-        renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
         renderSectionHeader={this.renderStationHeader}
         renderRow={this.renderRow}
         renderSeparator={this.renderSeparator} />
@@ -107,14 +108,18 @@ class MenuComponent extends Component {
   renderBody() {
     let errorView;
     if (this.state.error) {
-      return (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorMessage}>{AppError.getErrorMessage(this.state.error)}</Text>
-        </View>
-      );
+      return this.renderErrorView();
     } else {
       return this.renderListView();
     }
+  }
+
+  renderErrorView() {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorMessage}>{AppError.getErrorMessage(this.state.error)}</Text>
+      </View>
+    );
   }
 
   componentDidMount() {
@@ -139,23 +144,6 @@ class MenuComponent extends Component {
     }
   }
 
-  onToolbarActionSelected(position) {
-    this.openDatePicker();
-  }
-
-  async openDatePicker() {
-    try {
-      const {action, year, month, day} = await DatePickerAndroid.open({
-        date: new Date()
-      });
-      if (action !== DatePickerAndroid.dismissedAction) {
-        this.getData(this.state.cafe, MenuDataProvider.getValidDateForApi(year, month, day));
-      }
-    } catch ({code, message}) {
-      console.warn('Cannot open date picker', message);
-    }
-  }
-
   async getData(cafe, date) {
     this.setState({isRefreshing: true});
     const cafeId = CafeMap[cafe];
@@ -167,7 +155,8 @@ class MenuComponent extends Component {
       const dayData = data.days[0].cafes[cafeId].dayparts[0];
       if (!dayData.length) {
         this.setState({
-          error: 'NoMenuData'
+          error: 'NoMenuData',
+          isRefreshing: false
         });
         return;
       }
@@ -202,38 +191,16 @@ class MenuComponent extends Component {
 
 }
 
-const STATUS_BAR_HEIGHT = 32;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingTop: STATUS_BAR_HEIGHT
+    paddingTop: Dimension.STATUS_BAR_HEIGHT_IOS
   },
-  tabs: {
+  segmentedControl: {
     marginHorizontal: 20,
-    marginBottom: 15,
+    marginVertical: 15,
     backgroundColor: '#FFFFFF'
-  },
-  toolbar: {
-    backgroundColor: '#4CAF50',
-    height: Dimension.toolbar_height,
-  },
-  toolbarButton: {
-    height: Dimension.toolbar_height,
-    justifyContent: 'center',
-    flex: 1,
-  },
-  toolbarButtonText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    alignSelf: 'center',
-  },
-  toolbarContainer: {
-    backgroundColor: '#4CAF50',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   dishRow: {
     paddingVertical: 15,

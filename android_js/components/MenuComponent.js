@@ -173,7 +173,8 @@ class MenuComponent extends Component {
       const dayData = data.days[0].cafes[cafeId].dayparts[0];
       if (!dayData.length) {
         this.setState({
-          error: 'NoMenuData'
+          error: 'NoMenuData',
+          isRefreshing: false
         });
         return;
       }
@@ -215,10 +216,10 @@ const styles = StyleSheet.create({
   },
   toolbar: {
     backgroundColor: '#4CAF50',
-    height: Dimension.toolbar_height,
+    height: Dimension.TOOLBAR_HEIGHT,
   },
   toolbarButton: {
-    height: Dimension.toolbar_height,
+    height: Dimension.TOOLBAR_HEIGHT,
     justifyContent: 'center',
     flex: 1,
   },

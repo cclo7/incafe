@@ -40,6 +40,13 @@ class MenuDataProvider {
     return year + SEPARATOR + fullMonth + SEPARATOR + fullDay;
   }
 
+  static getValidDateForApiFromDateObject(date) {
+    const SEPARATOR = '-';
+    const fullMonth = this.getTwoDigitValue(date.getMonth() + 1);
+    const fullDay = this.getTwoDigitValue(date.getDate());
+    return date.getUTCFullYear() + SEPARATOR + fullMonth + SEPARATOR + fullDay;
+  }
+
   static getTwoDigitValue(value) {
     return value > 9 ? value : '0' + value;
   }

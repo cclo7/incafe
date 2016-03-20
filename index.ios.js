@@ -9,15 +9,24 @@ import React, {
 } from 'react-native';
 
 var MenuComponent = require('./ios_js/components/MenuComponent');
+var DatePickerComponent = require('./ios_js/components/DatePickerComponent');
 var MenuDataProvider = require('./infra/MenuDataProvider');
 
-class incafe extends Component {
+class incafe2 extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      date: new Date()
+    };
+  }
+
   render() {
     return (
       <Navigator
         ref='navigator'
         initialRoute={{name: 'Menu', index: 0}}
-        renderScene={this.renderScene}/>
+        renderScene={this.renderScene.bind(this)}/>
     );
   }
 
@@ -27,7 +36,27 @@ class incafe extends Component {
         return (
           <MenuComponent
             initCafe="inCafe"
-            initDate={MenuDataProvider.getTodayDate()}/>
+            initDate={MenuDataProvider.getValidDateForApiFromDateObject(this.state.date)}
+            onPressEditDate={() => {
+              navigator.push({
+                name: 'DatePicker',
+                index: route.index + 1
+              });
+            }}/>
+        );
+      case 'DatePicker':
+        return (
+          <DatePickerComponent
+            onDateChange={(date) => {
+              this.setState({
+                date: date
+              });
+              navigator.push({
+                name: 'Menu',
+                index: route.index + 1
+              });
+            }}
+            initDate={this.state.date}/>
         );
     }
   }
@@ -52,4 +81,4 @@ const styles = StyleSheet.create({
   },
 });
 
-AppRegistry.registerComponent('incafe', () => incafe);
+AppRegistry.registerComponent('incafe2', () => incafe2);

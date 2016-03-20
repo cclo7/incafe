@@ -44,12 +44,12 @@ const TOOLBAR_HIGHLIGHT_WIDTH = 3;
 
 const styles = StyleSheet.create({
   toolbarButton: {
-    height: Dimension.toolbar_height,
+    height: Dimension.TOOLBAR_HEIGHT,
     justifyContent: 'center',
     flex: 1,
   },
   toolbarButtonHighlight: {
-    height: Dimension.toolbar_height - TOOLBAR_HIGHLIGHT_WIDTH,
+    height: Dimension.TOOLBAR_HEIGHT - TOOLBAR_HIGHLIGHT_WIDTH,
     borderBottomWidth: TOOLBAR_HIGHLIGHT_WIDTH,
     borderBottomColor: '#FFFFFF'
   },
