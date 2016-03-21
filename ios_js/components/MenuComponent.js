@@ -67,6 +67,7 @@ class MenuComponent extends Component {
     return (
       <View style={styles.container}>
         <StatusBar
+          style={styles.statusBar}
           barStyle="default"
           networkActivityIndicatorVisible={this.state.isRefreshing} />
         <ToolbarComponent
@@ -123,6 +124,7 @@ class MenuComponent extends Component {
   renderListView() {
     return (
       <ListView
+        style={styles.bodyContainer}
         dataSource={this.state.mealDataSource}
         renderSectionHeader={this.renderStationHeader}
         renderRow={this.renderRow}
@@ -148,10 +150,11 @@ class MenuComponent extends Component {
   }
 
   onPressEditCafe() {
+    const cafeNameList = CafeManager.getCafeNameList().concat('Cancel');
     const cafeList = CafeManager.getCafeList().concat('Cancel');
     const cancelButtonIndex = cafeList.length-1;
     ActionSheetIOS.showActionSheetWithOptions({
-      options: cafeList,
+      options: cafeNameList,
       cancelButtonIndex: cancelButtonIndex
     },
     (buttonIndex) => {
@@ -235,12 +238,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingTop: Dimension.STATUS_BAR_HEIGHT_IOS
   },
   segmentedControl: {
     marginHorizontal: 10,
-    marginVertical: 5,
-    paddingVertical: 15,
+    marginVertical: 10,
+    paddingVertical: 10,
     backgroundColor: '#FFFFFF'
   },
   dishRow: {
@@ -275,11 +277,13 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    flex: 1
   },
   errorMessage: {
     fontSize: 16,
     marginTop: 30
-  }
+  },
 });
 
 module.exports = MenuComponent;

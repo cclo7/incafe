@@ -46,8 +46,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#FF9800',
     alignItems: 'center',
-    height: Dimension.TOOLBAR_HEIGHT_IOS,
-    position: 'relative'
+    position: 'relative',
+    paddingTop: Dimension.STATUS_BAR_HEIGHT_IOS,
+    paddingBottom: 12
   },
   titleText: {
     color: '#FFFFFF',

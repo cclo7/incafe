@@ -14,7 +14,7 @@ const CAFE_MAP = {
   },
   'Nourish': {
     id: '108980',
-    name: 'Nourish (SF)'
+    name: 'Nourish (San Francisco)'
   }
 };
 
@@ -25,6 +25,12 @@ class CafeManager {
 
   static getCafeList() {
     return Object.keys(CAFE_MAP);
+  }
+
+  static getCafeNameList() {
+    return Object.keys(CAFE_MAP).map((cafe) => {
+      return CAFE_MAP[cafe].name;
+    });
   }
 };
 
