@@ -11,12 +11,14 @@ import React, {
 var MenuComponent = require('./ios_js/components/MenuComponent');
 var DatePickerComponent = require('./ios_js/components/DatePickerComponent');
 var MenuDataProvider = require('./infra/MenuDataProvider');
+var CafeManager = require('./infra/CafeManager');
 
 class incafe2 extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
+      cafe: 'inCafe',
       date: new Date()
     };
   }
@@ -31,12 +33,18 @@ class incafe2 extends Component {
   }
 
   renderScene(route, navigator) {
+    let self = this;
     switch (route.name) {
       case 'Menu':
         return (
           <MenuComponent
-            initCafe="inCafe"
-            initDate={MenuDataProvider.getValidDateForApiFromDateObject(this.state.date)}
+            initCafe={this.state.cafe}
+            initDate={this.state.date}
+            onCafeChange={(cafe) => {
+              self.setState({
+                cafe: cafe
+              });
+            }}
             onPressEditDate={() => {
               navigator.push({
                 name: 'DatePicker',

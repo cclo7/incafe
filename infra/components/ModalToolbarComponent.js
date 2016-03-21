@@ -43,11 +43,12 @@ const styles = StyleSheet.create({
   titleText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    flex: 1
+    flex: 1,
+    fontSize: Dimension.MODAL_TITLE_TEXT_SIZE
   },
   exitButton: {
-    padding: 5,
-    marginHorizontal: 10
+    padding: 10,
+    marginRight: 10
   }
 });
 

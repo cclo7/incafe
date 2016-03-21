@@ -10,6 +10,7 @@ import React, {
 
 let Dimension = require('.././Dimension');
 let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
+let editCafeImg = require('../.././infra/img/ic_place_white_24dp.png');
 
 class ToolbarComponent extends Component {
 
@@ -22,9 +23,15 @@ class ToolbarComponent extends Component {
 
     return (
       <View style={styles.container}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={this.props.onPressEditCafe}>
+          <Image
+            source={editCafeImg} />
+        </TouchableOpacity>
         <Text style={styles.titleText}>{this.props.title}</Text>
         <TouchableOpacity
-          style={styles.editDateButton}
+          style={styles.iconButton}
           onPress={this.props.onPressEditDate}>
           <Image
             source={editDateImg} />
@@ -36,22 +43,21 @@ class ToolbarComponent extends Component {
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
     backgroundColor: '#FF9800',
     alignItems: 'center',
-    justifyContent: 'center',
     height: Dimension.TOOLBAR_HEIGHT_IOS,
     position: 'relative'
   },
   titleText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+    fontSize: Dimension.TITLE_TEXT_SIZE
   },
-  editDateButton: {
-    position: 'absolute',
-    right: 20,
-    top: 9,
-    height: Dimension.TOOLBAR_HEIGHT_IOS,
-    paddingHorizontal: 5,
+  iconButton: {
+    paddingHorizontal: 10,
   }
 });
 

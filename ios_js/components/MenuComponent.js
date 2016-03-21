@@ -11,15 +11,18 @@ import React, {
   TouchableHighlight,
   Navigator,
   TabBarIOS,
-  DatePickerIOS
+  DatePickerIOS,
+  ActionSheetIOS
 } from 'react-native';
 
 let MenuDataProvider = require('../.././infra/MenuDataProvider');
 let Dimension = require('../.././infra/Dimension');
+let CafeManager = require('../.././infra/CafeManager');
 let ToolbarComponent = require('../.././infra/components/ToolbarComponent');
-let CafeMap = require('../.././infra/CafeMap');
 let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
 const AppError = require('../.././infra/Error');
+
+const DATA_KEY_SEGMENTED_CONTROL = 'CONTROL';
 
 class MenuComponent extends Component {
   constructor(props) {
@@ -37,6 +40,16 @@ class MenuComponent extends Component {
       isRefreshing: false,
       error: null
     };
+  }
+
+  componentDidMount() {
+    this.getData(this.state.cafe, this.state.date).done();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.initCafe !== this.state.cafe) {
+      this.getData(nextProps.initCafe, this.state.date).done();
+    }
   }
 
   render() {
@@ -57,8 +70,9 @@ class MenuComponent extends Component {
           barStyle="default"
           networkActivityIndicatorVisible={this.state.isRefreshing} />
         <ToolbarComponent
-          title='Menu'
-          onPressEditDate={this.props.onPressEditDate}/>
+          title={this.state.cafe + ' ' + MenuDataProvider.getDateForToolbarDisplay(this.state.date)}
+          onPressEditDate={this.props.onPressEditDate}
+          onPressEditCafe={this.onPressEditCafe.bind(this)}/>
         {tabs}
         {bodyView}
       </View>
@@ -82,6 +96,17 @@ class MenuComponent extends Component {
   }
 
   renderStationHeader(sectionData, sectionID) {
+    if (sectionID === DATA_KEY_SEGMENTED_CONTROL) {
+      return (
+        <SegmentedControlIOS
+          style={styles.segmentedControl}
+          tintColor="#FF9800"
+          selectedIndex={0}
+          onValueChange={this.onChangeMenuForDay.bind(this)}
+          values={this.state.tabs} />
+      );
+    }
+
     return (
       <View style={styles.stationRow}>
         <Text style={styles.stationText}>{sectionID}</Text>
@@ -122,21 +147,28 @@ class MenuComponent extends Component {
     );
   }
 
-  componentDidMount() {
-    this.getData(this.state.cafe, this.state.date).done();
-  }
-
-  onRefreshData() {
-    this.getData(this.state.cafe, this.state.date);
+  onPressEditCafe() {
+    const cafeList = CafeManager.getCafeList().concat('Cancel');
+    const cancelButtonIndex = cafeList.length-1;
+    ActionSheetIOS.showActionSheetWithOptions({
+      options: cafeList,
+      cancelButtonIndex: cancelButtonIndex
+    },
+    (buttonIndex) => {
+      if (buttonIndex !== cancelButtonIndex) {
+        this.props.onCafeChange(cafeList[buttonIndex]);
+      }
+    });
   }
 
   onChangeMenuForDay(nextTab) {
     if (this.state.menuData) {
       const nextTabIndex = this.state.tabs.indexOf(nextTab);
-      const cafeId = CafeMap[this.state.cafe];
+      const cafeId = CafeManager.getCafeIdFromName(this.state.cafe);
       const stations = this.getStationsFromData(this.state.menuData, cafeId, nextTabIndex);
       const itemsMap = this.state.menuData.items;
       const mealDataSource = MenuDataProvider.parseMeal(stations, itemsMap);
+
       this.setState({
         mealDataSource: this.state.mealDataSource.cloneWithRowsAndSections(mealDataSource),
         currentTab: nextTab
@@ -146,39 +178,47 @@ class MenuComponent extends Component {
 
   async getData(cafe, date) {
     this.setState({isRefreshing: true});
-    const cafeId = CafeMap[cafe];
+    const cafeId = CafeManager.getCafeIdFromName(cafe);
     const menuApi = MenuDataProvider.getMenuApi(cafeId, date);
 
     try {
       let response = await fetch(menuApi);
       let data = await response.json();
-      const dayData = data.days[0].cafes[cafeId].dayparts[0];
-      if (!dayData.length) {
+      console.log(data);
+      const cafeData = data.days[0].cafes[cafeId];
+      if (!cafeData || !cafeData.dayparts || !cafeData.dayparts.length || !cafeData.dayparts[0].length) {
         this.setState({
           error: 'NoMenuData',
-          isRefreshing: false
+          isRefreshing: false,
+          cafe: cafe,
+          date: date,
+          tabs: null,
+          currentTab: null
         });
         return;
       }
 
-      const tabs = MenuDataProvider.getMealTabs(data.days[0].cafes[cafeId].dayparts[0]);
+      const tabs = MenuDataProvider.getMealTabs(cafeData.dayparts[0]);
       // display menu for first meal (Breakfast) first
       const tabIndex = this.state.currentTab ? tabs.indexOf(this.state.currentTab) : 0;
       const currentTab = tabs[tabIndex];
       const stations = this.getStationsFromData(data, cafeId, tabIndex);
       const itemsMap = data.items;
       const mealDataSource = MenuDataProvider.parseMeal(stations, itemsMap);
+
       this.setState({
         mealDataSource: this.state.mealDataSource.cloneWithRowsAndSections(mealDataSource),
+        cafe: cafe,
+        date: date,
         menuData: data,
         tabs: tabs,
         currentTab: currentTab,
-        date: date,
         isRefreshing: false,
         error: null
       });
 
     } catch (error) {
+      console.log(error);
       this.setState({
         error: error
       });
@@ -198,8 +238,9 @@ const styles = StyleSheet.create({
     paddingTop: Dimension.STATUS_BAR_HEIGHT_IOS
   },
   segmentedControl: {
-    marginHorizontal: 20,
-    marginVertical: 15,
+    marginHorizontal: 10,
+    marginVertical: 5,
+    paddingVertical: 15,
     backgroundColor: '#FFFFFF'
   },
   dishRow: {
@@ -229,7 +270,8 @@ const styles = StyleSheet.create({
   },
   stationText: {
     fontSize: 16,
-    color: '#616161'
+    color: '#616161',
+    fontWeight: 'bold'
   },
   errorContainer: {
     alignItems: 'center',
