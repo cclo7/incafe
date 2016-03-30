@@ -35,8 +35,8 @@ class MenuComponent extends Component {
       tabs: [],
       currentTab: null,
       menuData: null,
-      cafe: this.props.initCafe,
-      date: this.props.initDate,
+      cafe: this.props.cafe,
+      date: this.props.date,
       isRefreshing: false,
       error: null
     };
@@ -47,8 +47,8 @@ class MenuComponent extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.initCafe !== this.state.cafe) {
-      this.getData(nextProps.initCafe, this.state.date).done();
+    if (nextProps.cafe !== this.state.cafe) {
+      this.getData(nextProps.cafe, this.state.date).done();
     }
   }
 
@@ -70,10 +70,6 @@ class MenuComponent extends Component {
           style={styles.statusBar}
           barStyle="default"
           networkActivityIndicatorVisible={this.state.isRefreshing} />
-        <ToolbarComponent
-          title={this.state.cafe + ' ' + MenuDataProvider.getDateForToolbarDisplay(this.state.date)}
-          onPressEditDate={this.props.onPressEditDate}
-          onPressEditCafe={this.onPressEditCafe.bind(this)}/>
         {tabs}
         {bodyView}
       </View>
@@ -238,6 +234,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    marginTop: Dimension.TOOLBAR_HEIGHT,
   },
   segmentedControl: {
     marginHorizontal: 10,
@@ -246,12 +243,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF'
   },
   dishRow: {
-    paddingVertical: 15,
+    paddingVertical: 10,
     paddingHorizontal: 20,
     elevation: 2
   },
   dishLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#000000'
   },
   dishDescription: {
@@ -266,12 +263,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 20
   },
   stationRow: {
-    paddingVertical: 10,
+    paddingVertical: 5,
     paddingHorizontal: 20,
     backgroundColor: '#FFE0B2',
   },
   stationText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#616161',
     fontWeight: 'bold'
   },

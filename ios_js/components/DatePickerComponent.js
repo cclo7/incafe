@@ -25,9 +25,6 @@ class DatePickerComponent extends Component {
       <View style={styles.container}>
         <StatusBar
           barStyle="default"/>
-        <ModalToolbarComponent
-          title='Pick another date'
-          onPressExit={this.props.onCancel} />
         <View style={styles.datePickerContainer}>
           <DatePickerIOS
             mode='date'
@@ -58,7 +55,7 @@ class DatePickerComponent extends Component {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
-    paddingTop: Dimension.STATUS_BAR_HEIGHT_IOS,
+    marginTop: Dimension.TOOLBAR_HEIGHT,
   },
   datePickerContainer: {
     flex: 1,
@@ -73,7 +70,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     fontWeight: 'bold',
-    fontSize: 16
+    fontSize: 14
   }
 });
 
