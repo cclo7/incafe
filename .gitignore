@@ -1,7 +1,3 @@
-# Custom
-.vscode
-android/app/android.keystore
-
 # OSX
 #
 .DS_Store

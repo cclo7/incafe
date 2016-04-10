@@ -84,8 +84,8 @@ android {
         applicationId "com.cclo7.android.incafe"
         minSdkVersion 16
         targetSdkVersion 22
-        versionCode 16
-        versionName "2.0"
+        versionCode 1
+        versionName "1.0"
         ndk {
             abiFilters "armeabi-v7a", "x86"
         }

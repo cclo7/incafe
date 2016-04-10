@@ -11,7 +11,8 @@ import React, {
   TouchableNativeFeedback,
   DatePickerAndroid,
   PullToRefreshViewAndroid,
-  RecyclerViewBackedScrollView
+  RecyclerViewBackedScrollView,
+  Modal
 } from 'react-native';
 
 let MenuDataProvider = require('../.././infra/MenuDataProvider');
@@ -20,6 +21,7 @@ let Tabs = require('../.././infra/components/TabsComponent');
 let CafeMap = require('../.././infra/CafeMap');
 let CafeManager = require('../.././infra/CafeManager');
 let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
+let editCafeImg = require('../.././infra/img/ic_place_white_24dp.png');
 const AppError = require('../.././infra/Error');
 
 class MenuComponent extends Component {
@@ -36,7 +38,8 @@ class MenuComponent extends Component {
       cafe: this.props.initCafe,
       date: this.props.initDate,
       isRefreshing: false,
-      error: null
+      error: null,
+      isCafePickerOpen: false
     };
   }
 
@@ -50,18 +53,28 @@ class MenuComponent extends Component {
         onPress={this.onChangeMenuForDay.bind(this)} />;
     }
 
+    let cafePickerView = this.renderCafePicker();
+
     return (
       <View style={styles.container}>
         <ToolbarAndroid
           style={styles.toolbar}
           title={this.state.cafe + ' ' + MenuDataProvider.getDateForToolbarDisplay(this.state.date)}
           titleColor='#FFFFFF'
-          actions={[{title: 'Change', icon: editDateImg, show: 'always'}]}
+          actions={this.getToolbarActions()}
           onActionSelected={this.onToolbarActionSelected.bind(this)} />
         {tabs}
         {bodyView}
+        {cafePickerView}
       </View>
     );
+  }
+
+  getToolbarActions() {
+    return [
+      {title: 'Change Date', icon: editDateImg, show: 'always'},
+      {title: 'Change Cafe', icon: editCafeImg, show: 'always'}
+    ];
   }
 
   renderRow(rowData, sectionID, rowID, highlightRow) {
@@ -124,6 +137,21 @@ class MenuComponent extends Component {
     }
   }
 
+  renderCafePicker() {
+    return (
+      <Modal
+        animated={true}
+        transparent={true}
+        visible={this.state.isCafePickerOpen}
+        >
+        <View style={styles.cafePicker}>
+          <Text>a</Text>
+          <Text>b</Text>
+        </View>
+      </Modal>
+    );
+  }
+
   componentDidMount() {
     this.getData(this.state.cafe, this.state.date).done();
   }
@@ -147,7 +175,20 @@ class MenuComponent extends Component {
   }
 
   onToolbarActionSelected(position) {
-    this.openDatePicker();
+    switch(position) {
+      case 0:
+        this.openDatePicker();
+        break;
+      // case 1:
+      //   this.openCafePicker();
+      //   break;
+    }
+  }
+
+  openCafePicker() {
+    this.setState({
+      isCafePickerOpen: true
+    });
   }
 
   async openDatePicker() {
@@ -272,6 +313,14 @@ const styles = StyleSheet.create({
   errorMessage: {
     fontSize: 16,
     marginTop: 30
+  },
+  cafePicker: {
+    position: absolute;
+    bottom: 0;
+    borderTopColor: '#000000',
+    borderTopWidth: 1,
+    backgroundColor: '#FFFFFF',
+    flex: 1
   }
 });
 
