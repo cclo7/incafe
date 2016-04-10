@@ -18,6 +18,7 @@ let MenuDataProvider = require('../.././infra/MenuDataProvider');
 let Dimension = require('../.././infra/Dimension');
 let Tabs = require('../.././infra/components/TabsComponent');
 let CafeMap = require('../.././infra/CafeMap');
+let CafeManager = require('../.././infra/CafeManager');
 let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
 const AppError = require('../.././infra/Error');
 
@@ -53,7 +54,7 @@ class MenuComponent extends Component {
       <View style={styles.container}>
         <ToolbarAndroid
           style={styles.toolbar}
-          title={this.state.cafe + ' ' + this.state.date}
+          title={this.state.cafe + ' ' + MenuDataProvider.getDateForToolbarDisplay(this.state.date)}
           titleColor='#FFFFFF'
           actions={[{title: 'Change', icon: editDateImg, show: 'always'}]}
           onActionSelected={this.onToolbarActionSelected.bind(this)} />
@@ -155,7 +156,9 @@ class MenuComponent extends Component {
         date: new Date()
       });
       if (action !== DatePickerAndroid.dismissedAction) {
-        this.getData(this.state.cafe, MenuDataProvider.getValidDateForApi(year, month, day));
+        const selectedDate = new Date();
+        selectedDate.setFullYear(year, month, day);
+        this.getData(this.state.cafe, selectedDate);
       }
     } catch ({code, message}) {
       console.warn('Cannot open date picker', message);
@@ -164,7 +167,7 @@ class MenuComponent extends Component {
 
   async getData(cafe, date) {
     this.setState({isRefreshing: true});
-    const cafeId = CafeMap[cafe];
+    const cafeId = CafeManager.getCafeIdFromName(cafe);
     const menuApi = MenuDataProvider.getMenuApi(cafeId, date);
 
     try {

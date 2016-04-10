@@ -27,7 +27,7 @@ class incafe extends Component {
         return (
           <MenuComponent
             initCafe="inCafe"
-            initDate={MenuDataProvider.getTodayDate()}/>
+            initDate={new Date()}/>
         );
     }
   }
