@@ -315,8 +315,8 @@ const styles = StyleSheet.create({
     marginTop: 30
   },
   cafePicker: {
-    position: absolute;
-    bottom: 0;
+    position: 'absolute',
+    bottom: 0,
     borderTopColor: '#000000',
     borderTopWidth: 1,
     backgroundColor: '#FFFFFF',
