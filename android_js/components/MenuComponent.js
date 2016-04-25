@@ -10,19 +10,20 @@ import React, {
   ViewPagerAndroid,
   TouchableNativeFeedback,
   DatePickerAndroid,
-  PullToRefreshViewAndroid,
+  RefreshControl,
   RecyclerViewBackedScrollView,
-  Modal
+  Picker
 } from 'react-native';
 
 let MenuDataProvider = require('../.././infra/MenuDataProvider');
 let Dimension = require('../.././infra/Dimension');
 let Tabs = require('../.././infra/components/TabsComponent');
-let CafeMap = require('../.././infra/CafeMap');
 let CafeManager = require('../.././infra/CafeManager');
 let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
 let editCafeImg = require('../.././infra/img/ic_place_white_24dp.png');
 const AppError = require('../.././infra/Error');
+let DialogAndroid = require('react-native-dialogs');
+let StringUtil = require('../.././infra/StringUtil');
 
 class MenuComponent extends Component {
   constructor(props) {
@@ -38,8 +39,7 @@ class MenuComponent extends Component {
       cafe: this.props.initCafe,
       date: this.props.initDate,
       isRefreshing: false,
-      error: null,
-      isCafePickerOpen: false
+      error: null
     };
   }
 
@@ -53,8 +53,6 @@ class MenuComponent extends Component {
         onPress={this.onChangeMenuForDay.bind(this)} />;
     }
 
-    let cafePickerView = this.renderCafePicker();
-
     return (
       <View style={styles.container}>
         <ToolbarAndroid
@@ -65,7 +63,6 @@ class MenuComponent extends Component {
           onActionSelected={this.onToolbarActionSelected.bind(this)} />
         {tabs}
         {bodyView}
-        {cafePickerView}
       </View>
     );
   }
@@ -85,7 +82,7 @@ class MenuComponent extends Component {
     return (
       <TouchableNativeFeedback>
         <View style={styles.dishRow}>
-          <Text style={styles.dishLabel}>{rowData.label}</Text>
+          <Text style={styles.dishLabel}>{StringUtil.capitalizeFirstLetters(rowData.label)}</Text>
           {descriptionText}
         </View>
       </TouchableNativeFeedback>
@@ -95,7 +92,7 @@ class MenuComponent extends Component {
   renderStationHeader(sectionData, sectionID) {
     return (
       <View style={styles.stationRow}>
-        <Text style={styles.stationText}>{sectionID}</Text>
+        <Text style={styles.stationText}>{StringUtil.capitalizeFirstLetters(sectionID)  }</Text>
       </View>
     );
   }
@@ -108,19 +105,20 @@ class MenuComponent extends Component {
 
   renderListView() {
     return (
-      <PullToRefreshViewAndroid
-        style={styles.container}
-        refreshing={this.state.isRefreshing}
-        onRefresh={this.onRefreshData.bind(this)}
-        colors={['#69F0AE', '#00E676', '#00C853']}
-        progressBackgroundColor={'#388E3C'} >
-        <ListView
-          dataSource={this.state.mealDataSource}
-          renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
-          renderSectionHeader={this.renderStationHeader}
-          renderRow={this.renderRow}
-          renderSeparator={this.renderSeparator} />
-      </PullToRefreshViewAndroid>
+      <ListView
+        dataSource={this.state.mealDataSource}
+        renderSectionHeader={this.renderStationHeader}
+        renderRow={this.renderRow}
+        renderSeparator={this.renderSeparator}
+        refreshControl={
+          <RefreshControl
+            style={styles.container}
+            refreshing={this.state.isRefreshing}
+            onRefresh={this.onRefreshData.bind(this)}
+            colors={['#69F0AE', '#00E676', '#00C853']}
+            progressBackgroundColor={'#388E3C'} />
+        }
+      />
     );
   }
 
@@ -137,33 +135,18 @@ class MenuComponent extends Component {
     }
   }
 
-  renderCafePicker() {
-    return (
-      <Modal
-        animated={true}
-        transparent={true}
-        visible={this.state.isCafePickerOpen}
-        >
-        <View style={styles.cafePicker}>
-          <Text>a</Text>
-          <Text>b</Text>
-        </View>
-      </Modal>
-    );
-  }
-
   componentDidMount() {
     this.getData(this.state.cafe, this.state.date).done();
   }
 
   onRefreshData() {
-    this.getData(this.state.cafe, this.state.date);
+    this.getData(this.state.cafe, this.state.date).done();
   }
 
   onChangeMenuForDay(nextTab) {
     if (this.state.menuData) {
       const nextTabIndex = this.state.tabs.indexOf(nextTab);
-      const cafeId = CafeMap[this.state.cafe];
+      const cafeId = CafeManager.getCafeIdFromName(this.state.cafe);
       const stations = this.getStationsFromData(this.state.menuData, cafeId, nextTabIndex);
       const itemsMap = this.state.menuData.items;
       const mealDataSource = MenuDataProvider.parseMeal(stations, itemsMap);
@@ -179,16 +162,27 @@ class MenuComponent extends Component {
       case 0:
         this.openDatePicker();
         break;
-      // case 1:
-      //   this.openCafePicker();
-      //   break;
+      case 1:
+        this.openCafePicker();
+        break;
     }
   }
 
   openCafePicker() {
-    this.setState({
-      isCafePickerOpen: true
-    });
+    const cafePickerOptions = {
+      title: 'Change cafe',
+      items: CafeManager.getCafeList(),
+      itemsCallbackSingleChoice: function(index, cafe) {
+        this.setState({
+          cafe: cafe
+        });
+        this.getData(cafe, this.state.date);
+      }.bind(this)
+    };
+
+    let cafePicker = new DialogAndroid();
+    cafePicker.set(cafePickerOptions);
+    cafePicker.show();
   }
 
   async openDatePicker() {
@@ -215,6 +209,10 @@ class MenuComponent extends Component {
       let response = await fetch(menuApi);
       let data = await response.json();
       const dayData = data.days[0].cafes[cafeId].dayparts[0];
+      console.log(cafe);
+      console.log(cafeId);
+      console.log(data);
+
       if (!dayData.length) {
         this.setState({
           error: 'NoMenuData',
@@ -248,6 +246,9 @@ class MenuComponent extends Component {
   }
 
   getStationsFromData(data, cafeId, tabIndex) {
+    console.log(data);
+    console.log(cafeId);
+    console.log(tabIndex);
     return data.days[0].cafes[cafeId].dayparts[0][tabIndex].stations;
   }
 
@@ -261,22 +262,6 @@ const styles = StyleSheet.create({
   toolbar: {
     backgroundColor: '#4CAF50',
     height: Dimension.TOOLBAR_HEIGHT,
-  },
-  toolbarButton: {
-    height: Dimension.TOOLBAR_HEIGHT,
-    justifyContent: 'center',
-    flex: 1,
-  },
-  toolbarButtonText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    alignSelf: 'center',
-  },
-  toolbarContainer: {
-    backgroundColor: '#4CAF50',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   dishRow: {
     paddingVertical: 15,
