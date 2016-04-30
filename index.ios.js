@@ -15,7 +15,7 @@ var MenuDataProvider = require('./infra/MenuDataProvider');
 var CafeManager = require('./infra/CafeManager');
 var Nav = require('./infra/Nav');
 
-class incafe2 extends Component {
+class incafe extends Component {
 
   constructor(props) {
     super(props);
@@ -45,7 +45,7 @@ class incafe2 extends Component {
       case 'Menu':
         return (
           <MenuComponent
-            cafe={this.state.cafe}
+            cafe={route.cafe}
             date={this.state.date} />
         );
       case 'DatePicker':
@@ -108,4 +108,4 @@ console.ignoredYellowBox = [
   // Other warnings you don't want like 'jsSchedulingOverhead',
 ];
 
-AppRegistry.registerComponent('incafe2', () => incafe2);
+AppRegistry.registerComponent('incafe', () => incafe);

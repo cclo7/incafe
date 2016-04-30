@@ -145,21 +145,6 @@ class MenuComponent extends Component {
     );
   }
 
-  onPressEditCafe() {
-    const cafeNameList = CafeManager.getCafeNameList().concat('Cancel');
-    const cafeList = CafeManager.getCafeList().concat('Cancel');
-    const cancelButtonIndex = cafeList.length-1;
-    ActionSheetIOS.showActionSheetWithOptions({
-      options: cafeNameList,
-      cancelButtonIndex: cancelButtonIndex
-    },
-    (buttonIndex) => {
-      if (buttonIndex !== cancelButtonIndex) {
-        this.props.onCafeChange(cafeList[buttonIndex]);
-      }
-    });
-  }
-
   onChangeMenuForDay(nextTab) {
     if (this.state.menuData) {
       const nextTabIndex = this.state.tabs.indexOf(nextTab);
