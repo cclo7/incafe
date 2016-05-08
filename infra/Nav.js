@@ -9,7 +9,7 @@ let Dimension = require('./Dimension');
 
 const styles = StyleSheet.create({
   nav: {
-    backgroundColor: '#FF9800',
+    backgroundColor: '#4CAF50',
     height: Dimension.TOOLBAR_HEIGHT,
   },
   navText: {

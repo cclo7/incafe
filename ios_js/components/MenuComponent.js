@@ -21,6 +21,7 @@ let CafeManager = require('../.././infra/CafeManager');
 let ToolbarComponent = require('../.././infra/components/ToolbarComponent');
 let editDateImg = require('../.././infra/img/ic_schedule_white_24dp.png');
 const AppError = require('../.././infra/Error');
+let StringUtil = require('../.././infra/StringUtil');
 
 const DATA_KEY_SEGMENTED_CONTROL = 'CONTROL';
 
@@ -58,7 +59,7 @@ class MenuComponent extends Component {
     if (this.state.currentTab) {
       tabs = <SegmentedControlIOS
               style={styles.segmentedControl}
-              tintColor="#FF9800"
+              tintColor="#4CAF50"
               selectedIndex={0}
               onValueChange={this.onChangeMenuForDay.bind(this)}
               values={this.state.tabs} />;
@@ -67,7 +68,6 @@ class MenuComponent extends Component {
     return (
       <View style={styles.container}>
         <StatusBar
-          style={styles.statusBar}
           barStyle="default"
           networkActivityIndicatorVisible={this.state.isRefreshing} />
         {tabs}
@@ -80,12 +80,12 @@ class MenuComponent extends Component {
     let descriptionText;
     if (rowData.description.length) {
       const formattedDescription = rowData.description.replace(/<br \/>/g, '\n');
-      descriptionText = <Text style={styles.dishDescription}>{formattedDescription}</Text>;
+      descriptionText = <Text style={styles.dishDescription}>{StringUtil.capitalizeFirstLetters(formattedDescription)}</Text>;
     }
     return (
       <TouchableOpacity>
         <View style={styles.dishRow}>
-          <Text style={styles.dishLabel}>{rowData.label}</Text>
+          <Text style={styles.dishLabel}>{StringUtil.capitalizeFirstLetters(rowData.label)}</Text>
           {descriptionText}
         </View>
       </TouchableOpacity>
@@ -97,7 +97,6 @@ class MenuComponent extends Component {
       return (
         <SegmentedControlIOS
           style={styles.segmentedControl}
-          tintColor="#FF9800"
           selectedIndex={0}
           onValueChange={this.onChangeMenuForDay.bind(this)}
           values={this.state.tabs} />
@@ -106,7 +105,7 @@ class MenuComponent extends Component {
 
     return (
       <View style={styles.stationRow}>
-        <Text style={styles.stationText}>{sectionID}</Text>
+        <Text style={styles.stationText}>{StringUtil.capitalizeFirstLetters(sectionID)}</Text>
       </View>
     );
   }
@@ -120,8 +119,8 @@ class MenuComponent extends Component {
   renderListView() {
     return (
       <ListView
-        style={styles.bodyContainer}
         dataSource={this.state.mealDataSource}
+        initialListSize={1}
         renderSectionHeader={this.renderStationHeader}
         renderRow={this.renderRow}
         renderSeparator={this.renderSeparator} />
@@ -244,13 +243,13 @@ const styles = StyleSheet.create({
   },
   dishRowSeparator: {
     height: 1,
-    backgroundColor: '#FFE0B2',
+    backgroundColor: '#E0E0E0',
     marginHorizontal: 20
   },
   stationRow: {
     paddingVertical: 5,
     paddingHorizontal: 20,
-    backgroundColor: '#FFE0B2',
+    backgroundColor: '#EEEEEE',
   },
   stationText: {
     fontSize: 14,

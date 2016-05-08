@@ -107,6 +107,7 @@ class MenuComponent extends Component {
     return (
       <ListView
         dataSource={this.state.mealDataSource}
+        initialListSize={1}
         renderSectionHeader={this.renderStationHeader}
         renderRow={this.renderRow}
         renderSeparator={this.renderSeparator}
