@@ -6,7 +6,8 @@ import React, {
   Text,
   View,
   Navigator,
-  ActionSheetIOS
+  ActionSheetIOS,
+  AsyncStorage
 } from 'react-native';
 
 var MenuComponent = require('./ios_js/components/MenuComponent');
@@ -14,6 +15,7 @@ var DatePickerComponent = require('./ios_js/components/DatePickerComponent');
 var MenuDataProvider = require('./infra/MenuDataProvider');
 var CafeManager = require('./infra/CafeManager');
 var Nav = require('./infra/Nav');
+var DataStore = require('./infra/DataStore');
 
 class incafe extends Component {
 
@@ -21,11 +23,33 @@ class incafe extends Component {
     super(props);
     this.state = {
       cafe: 'inCafe',
-      date: new Date()
+      date: new Date(),
+      dataReady: false
     };
   }
 
+  componentWillMount() {
+    AsyncStorage.getItem(DataStore.CAFE, (error, result) => {
+      if (error == null && result != null) {
+        this.setState({
+          cafe: result,
+          dataReady: true
+        });
+      }
+    });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.cafe != this.state.cafe) {
+      AsyncStorage.setItem(DataStore.CAFE, this.state.cafe);
+    }
+  }
+
   render() {
+    if (!this.state.dataReady) {
+      return null;
+    }
+
     return (
       <Navigator
         ref='navigator'
@@ -86,6 +110,9 @@ class incafe extends Component {
     (buttonIndex) => {
       if (buttonIndex !== cancelButtonIndex) {
         const cafe = cafeList[buttonIndex];
+        this.setState({
+          cafe: cafe
+        });
         navigator.resetTo(this.getMenuRoute(cafe));
       }
     });
