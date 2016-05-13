@@ -26,9 +26,7 @@ class incafe extends Component {
       date: new Date(),
       dataReady: false
     };
-  }
 
-  componentWillMount() {
     AsyncStorage.getItem(DataStore.CAFE, (error, result) => {
       if (error == null && result != null) {
         this.setState({
@@ -38,7 +36,7 @@ class incafe extends Component {
       }
     });
   }
-
+  
   componentDidUpdate(prevProps, prevState) {
     if (prevState.cafe != this.state.cafe) {
       AsyncStorage.setItem(DataStore.CAFE, this.state.cafe);

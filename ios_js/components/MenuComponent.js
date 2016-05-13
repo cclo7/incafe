@@ -47,12 +47,6 @@ class MenuComponent extends Component {
     this.getData(this.state.cafe, this.state.date).done();
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.cafe !== this.state.cafe) {
-      this.getData(nextProps.cafe, this.state.date).done();
-    }
-  }
-
   render() {
     let bodyView = this.renderBody();
     let tabs;
